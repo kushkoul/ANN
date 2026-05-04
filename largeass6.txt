@@ -1,0 +1,102 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+
+# 1. Generate multi class Data(3 classes)
+np.random.seed(0)
+X = np.vstack([
+    np.random.randn(50, 2) + [0, 0],
+    np.random.randn(50, 2) + [3, 3],
+    np.random.randn(50, 2) + [-3, 3]
+])
+y = np.array([0]*50 + [1]*50 + [2]*50)
+
+# Train-Test Split
+X_train, X_test, y_train_labels, y_test_labels = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# One-hot encoding for multi class labels
+def one_hot(y, num_classes):
+    oh = np.zeros((len(y), num_classes))
+    oh[np.arange(len(y)), y] = 1
+    return oh
+
+y_train = one_hot(y_train_labels, 3)
+y_test = one_hot(y_test_labels, 3)
+
+# Activation functions
+def relu(x):
+    return np.maximum(0, x)
+
+def relu_derivative(x):
+    return (x > 0).astype(float)
+
+def softmax(x):
+    exp_x = np.exp(x - np.max(x, axis=1, keepdims=True))
+    return exp_x / np.sum(exp_x, axis=1, keepdims=True)
+
+# Initialize parameters(Architecture)
+input_size = 2   #2 features (X1, X2)
+hidden_size = 100 #REQUIREMENT: 100 Neurons    
+output_size = 3    #REQUIREMENT: >1 Output Neuron
+
+W1 = np.random.randn(input_size, hidden_size) * 0.01
+b1 = np.zeros((1, hidden_size))
+W2 = np.random.randn(hidden_size, output_size) * 0.01
+b2 = np.zeros((1, output_size))
+
+learning_rate = 0.01
+epochs = 1000
+
+# Training Loop (Optimization Algorithm: Gradient Descent)
+for epoch in range(epochs):
+    Z1 = np.dot(X_train, W1) + b1
+    A1 = relu(Z1)                    # Requirement: ReLU Non-linearity
+
+    Z2 = np.dot(A1, W2) + b2
+    A2 = softmax(Z2)                  # Probabilities for 3 classes
+
+    # --- Loss (Cross-Entropy) ---
+    loss = -np.mean(np.sum(y_train * np.log(A2 + 1e-8), axis=1))
+
+    # --- Backpropagation ---
+    dZ2 = A2 - y_train
+    dW2 = np.dot(A1.T, dZ2)
+    db2 = np.sum(dZ2, axis=0, keepdims=True)
+
+    dA1 = np.dot(dZ2, W2.T)
+    dZ1 = dA1 * relu_derivative(Z1)
+
+    dW1 = np.dot(X_train.T, dZ1)
+    db1 = np.sum(dZ1, axis=0, keepdims=True)
+    
+    #--- Update Weights (Gradient Descent) ---
+    W2 -= learning_rate * (dW2 / len(X_train))
+    b2 -= learning_rate * (db2 / len(X_train))
+    W1 -= learning_rate * (dW1 / len(X_train))
+    b1 -= learning_rate * (db1 / len(X_train))
+
+    if epoch % 100 == 0:
+        print(f"Epoch {epoch}, Loss: {loss:.4f}")
+
+# -----------------------------
+# Prediction Function 
+# -----------------------------
+def predict(X):
+    A1 = relu(np.dot(X, W1) + b1)
+    A2 = softmax(np.dot(A1, W2) + b2)
+    return np.argmax(A2, axis=1)
+
+# -----------------------------
+# Accuracy on TEST data
+# -----------------------------
+y_pred = predict(X_test)
+accuracy = np.mean(y_pred == y_test_labels)
+
+print("\nFinal Accuracy:", accuracy*100,"%")
+
+# Plot
+plt.scatter(X[:, 0], X[:, 1], c=predict(X), cmap='viridis')
+plt.title("Improved Neural Network Classification")
+plt.show()

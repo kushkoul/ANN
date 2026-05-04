@@ -1,0 +1,54 @@
+import numpy as np
+
+# Input patterns
+patterns = np.array([
+    [1, 1, 0, 0],
+    [1, 1, 0, 1],
+    [0, 0, 1, 1],
+    [0, 1, 1, 1]
+])
+
+# Parameters
+num_features = patterns.shape[1]
+max_clusters = 5
+rho = 0.6   # vigilance
+
+# Initialize weights
+W = np.ones((max_clusters, num_features))
+T = np.ones((max_clusters, num_features))
+
+clusters = [-1] * len(patterns)
+
+# Similarity function
+def match_score(p, w):
+    return np.sum(p * w) / (np.sum(p) + 1e-8)
+
+# Training
+for i, p in enumerate(patterns):
+
+    best_cluster = -1
+    best_score = -1
+
+    # Step 1: find BEST matching cluster
+    for j in range(max_clusters):
+        score = match_score(p, W[j])
+
+        if score > best_score:
+            best_score = score
+            best_cluster = j
+
+    # Step 2: check vigilance
+    if best_score >= rho:
+        clusters[i] = best_cluster
+
+        # Step 3: update weights
+        W[best_cluster] = W[best_cluster] * p
+        T[best_cluster] = W[best_cluster] / (0.5 + np.sum(W[best_cluster]))
+
+    else:
+        print("No suitable cluster")
+
+# Output
+print("\nPattern -> Cluster")
+for i, c in enumerate(clusters):
+    print(patterns[i], "-> Cluster", c)

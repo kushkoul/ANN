@@ -1,0 +1,39 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Activation Functions
+def sigmoid(x): return 1 / (1 + np.exp(-x))
+def tanh(x): return np.tanh(x)
+def relu(x): return np.maximum(0, x)
+def leaky_relu(x): return np.where(x > 0, x, 0.01 * x)
+def identity(x): return x
+def binary_step(x): return np.where(x >= 0, 1, 0)
+def bipolar_step(x): return np.where(x >= 0, 1, -1)
+def bipolar_sigmoid(x): return (2 / (1 + np.exp(-x))) - 1
+
+# Store functions
+functions = {
+    "Sigmoid": sigmoid,
+    "Tanh": tanh,
+    "ReLU": relu,
+    "Leaky ReLU": leaky_relu,
+    "Identity": identity,
+    "Binary Step": binary_step,
+    "Bipolar Step": bipolar_step,
+    "Bipolar Sigmoid": bipolar_sigmoid
+}
+
+# Input range
+x = np.linspace(-10, 10, 400)
+
+# Plot
+plt.figure(figsize=(12,10))
+
+for i, (name, func) in enumerate(functions.items(), 1):
+    plt.subplot(4, 2, i)
+    plt.plot(x, func(x))
+    plt.title(name)
+    plt.grid()
+
+plt.tight_layout()
+plt.show()
