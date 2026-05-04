@@ -46,5 +46,6 @@ def recall(input_pattern, W, steps=5):
 # -----------------------------
 # Test with Noisy Input
 # -----------------------------
-print("\nNoisy Input:", np.array([1, -1, -1, -1]))
+ptest_pattern=np.array([1,-1,-1,-1])
+print("\nNoisy Input:", test_pattern)
 print("Recalled Pattern:", recall(test_pattern, W))
